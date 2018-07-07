@@ -62,12 +62,12 @@ class Model():
             # Your Code here
             ##################
     def create_one_rnn_layer():
-                cell = tf.nn.rnn_cell.BasicLSTMCell(self.dim_embedding)
-                cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=self.keep_prob)
-                return cell
-            multi_layer_cell = tf.nn.rnn_cell.MultiRNNCell([create_one_rnn_layer() for _ in range(self.rnn_layers)])
-            self.state_tensor = multi_layer_cell.zero_state(self.batch_size, dtype=tf.float32)
-            outputs_tensor, self.outputs_state_tensor = tf.nn.dynamic_rnn(multi_layer_cell, data, dtype=tf.float32, initial_state=self.state_tensor)
+        cell = tf.nn.rnn_cell.BasicLSTMCell(self.dim_embedding)
+        cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=self.keep_prob)
+        return cell
+    multi_layer_cell = tf.nn.rnn_cell.MultiRNNCell([create_one_rnn_layer() for _ in range(self.rnn_layers)])
+    self.state_tensor = multi_layer_cell.zero_state(self.batch_size, dtype=tf.float32)
+    outputs_tensor, self.outputs_state_tensor = tf.nn.dynamic_rnn(multi_layer_cell, data, dtype=tf.float32, initial_state=self.state_tensor)
 
         # concate every time step
         seq_output = tf.concat(outputs_tensor, 1)
