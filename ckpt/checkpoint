@@ -1,0 +1,2 @@
+model_checkpoint_path: "C:\\Users\\Zhu\\Desktop\\\346\267\261\345\272\246\345\255\246\344\271\240\347\254\254\345\205\255\345\221\250\\ai100-quiz-w10-code-master\\quiz-w10-code\\ckpt/model-200000"
+all_model_checkpoint_paths: "C:\\Users\\Zhu\\Desktop\\\346\267\261\345\272\246\345\255\246\344\271\240\347\254\254\345\205\255\345\221\250\\ai100-quiz-w10-code-master\\quiz-w10-code\\ckpt/model-200000"
