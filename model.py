@@ -61,16 +61,23 @@ class Model():
             ##################
             # Your Code here
             ##################
-    def create_one_rnn_layer():
-        cell = tf.nn.rnn_cell.BasicLSTMCell(self.dim_embedding)
-        cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=self.keep_prob)
-        return cell
-    multi_layer_cell = tf.nn.rnn_cell.MultiRNNCell([create_one_rnn_layer() for _ in range(self.rnn_layers)])
-    self.state_tensor = multi_layer_cell.zero_state(self.batch_size, dtype=tf.float32)
-    outputs_tensor, self.outputs_state_tensor = tf.nn.dynamic_rnn(multi_layer_cell, data, dtype=tf.float32, initial_state=self.state_tensor)
+            state_size = self.dim_embedding
+            data = tf.nn.dropout(data, self.keep_prob)
+            def get_a_cell():
+                lstm_cell = tf.nn.rnn_cell.BasicLSTMCell(state_size)
+                lstm_cell = tf.nn.rnn_cell.DropoutWrapper(
+                        lstm_cell, output_keep_prob=self.keep_prob)
+                return lstm_cell
+            
+            cell = tf.nn.rnn_cell.MultiRNNCell([get_a_cell() for _ in range(self.rnn_layers)])
+            self.state_tensor = cell.zero_state(self.batch_size, tf.float32)
+
+            outputs_tensor, self.outputs_state_tensor = tf.nn.dynamic_rnn(cell, data, initial_state=self.state_tensor)
+            #End of my code
 
         # concate every time step
         seq_output = tf.concat(outputs_tensor, 1)
+
         # flatten it
         seq_output_final = tf.reshape(seq_output, [-1, self.dim_embedding])
 
@@ -78,16 +85,18 @@ class Model():
             ##################
             # Your Code here
             ##################
-            W_o = tf.get_variable('W_o', [self.dim_embedding, self.num_words], initializer=tf.random_normal_initializer(stddev=0.01))
+            W_o = tf.get_variable('W_o', [state_size, self.num_words], initializer=tf.random_normal_initializer(stddev=0.01))
             b_o = tf.get_variable('b_o', [self.num_words], initializer=tf.constant_initializer(0.0))
-            
+
             logits = tf.matmul(seq_output_final, W_o) + b_o
+
+            # End of my code
 
         tf.summary.histogram('logits', logits)
 
         self.predictions = tf.nn.softmax(logits, name='predictions')
 
-        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.reshape(self.Y, [-1])
+        loss = tf.nn.sparse_softmax_cross_entropy_with_logits(labels=tf.reshape(self.Y, [-1]), logits=logits)
         mean, var = tf.nn.moments(logits, -1)
         self.loss = tf.reduce_mean(loss)
         tf.summary.scalar('logits_loss', self.loss)
