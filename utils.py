@@ -31,21 +31,30 @@ def get_train_data(vocabulary, batch_size, num_steps):
     ##################
     # Your Code here
     ##################
-    data_length = len(vocabulary)
-    x_raw = vocabulary
-    y_raw = x_raw[1:]
-    y_raw.append(x_raw[-1]) 
+    import json
+    with open('dictionary.json', encoding='utf-8') as inf:
+        dictionary = json.load(inf, encoding='utf-8')
+    data = [dictionary.get(ch,0) for ch in vocabulary]
+    raw_x = data
+    raw_y = data[1:]
+    raw_y.append(0)
+    
+    data_size = len(data)
+    #print('data Size size', data_size)
+    data_partition_size = data_size // batch_size
+    #print('data partition size', data_partition_size)
 
-    num_samples = data_length // num_steps
-    num_batches = num_samples // batch_size
+    data_x = np.zeros([batch_size, data_partition_size], dtype=np.int32)
+    data_y = np.zeros([batch_size, data_partition_size], dtype=np.int32)
 
-    x_data_sampled = [ x_raw[num_steps * i : num_steps * (i + 1)] for i in range(num_samples) ]
-    y_data_sampled = [ y_raw[num_steps * i : num_steps * (i + 1)] for i in range(num_samples) ]
-
-    for i in range(num_batches):
-        x_data = x_data_sampled[batch_size * i : batch_size * (i + 1)]
-        y_data = y_data_sampled[batch_size * i : batch_size * (i + 1)]
-        yield (np.array(x_data), np.array(y_data))
+    for i in range(batch_size):
+        data_x[i] = raw_x[data_partition_size * i:data_partition_size * (i + 1)]
+        data_y[i] = raw_y[data_partition_size * i:data_partition_size * (i + 1)]
+    epoch_size  = data_partition_size // num_steps
+    for i in range(epoch_size):
+        x = data_x[:, i * num_steps:(i + 1) * num_steps]
+        y = data_y[:, i * num_steps:(i + 1) * num_steps]
+        yield (x,y)
 
 
 def build_dataset(words, n_words):
